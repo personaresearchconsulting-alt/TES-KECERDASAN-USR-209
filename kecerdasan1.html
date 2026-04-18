@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRC - Digital Assessment System</title>
+    <style>
+        :root { --prc: #1a4a7a; --bg: #f8fafc; --dark: #1e293b; --gold: #d4af37; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; background: var(--bg); color: var(--dark); -webkit-user-select: none; user-select: none; }
+        @media print { body { display:none !important; } }
+
+        /* Login Screen */
+        .login-box { max-width: 500px; margin: 50px auto; background: white; padding: 45px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; border-top: 10px solid var(--prc); position: relative; overflow: hidden; }
+        .login-box::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 5px; background: linear-gradient(90deg, var(--prc), var(--gold)); }
+        .logo-box { background: #000; color: #fff; width: 75px; height: 75px; line-height: 75px; margin: 0 auto 20px; border-radius: 18px; font-weight: bold; font-size: 28px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        input { width: 100%; padding: 15px; margin: 10px 0; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: var(--prc); outline: none; box-shadow: 0 0 0 4px rgba(26, 74, 122, 0.1); }
+        .btn-start { background: var(--prc); color: white; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.3s; font-size: 16px; }
+        .btn-start:hover { background: #133a61; transform: translateY(-2px); }
+
+        /* Test Interface */
+        header { background: var(--prc); color: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .container { max-width: 900px; margin: 30px auto; padding: 0 20px; }
+        .q-card { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #eef2f6; }
+        .q-text { font-size: 19px; line-height: 1.6; margin-bottom: 25px; font-weight: 500; color: #0f172a; }
+        .opt { display: flex; align-items: center; padding: 15px 20px; margin: 12px 0; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 16px; }
+        .opt:hover { background: #f1f5f9; border-color: #cbd5e1; }
+        .opt.selected { background: #f0fdf4; border-color: #22c55e; color: #166534; font-weight: bold; }
+        
+        /* Navigation Grid */
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; margin-top: 20px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .nav-item { height: 40px; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; border: 1px solid #e2e8f0; }
+        .nav-item.active { border: 2px solid var(--prc); color: var(--prc); }
+        .nav-item.filled { background: #22c55e; color: white; border-color: #16a34a; }
+
+        .nav-btns { display: flex; justify-content: space-between; margin-top: 30px; gap: 15px; }
+        .btn-nav { padding: 12px 30px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; transition: 0.3s; flex: 1; }
+        .btn-prev { background: #e2e8f0; color: #475569; }
+        .btn-next { background: var(--prc); color: white; }
+        .btn-finish { background: #ef4444; color: white; }
+
+        /* Result Section Table */
+        .badge-kunci { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 6px; font-weight: bold; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--prc); color: white; padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; }
+    </style>
+</head>
+<body oncontextmenu="return false" onkeydown="return (event.keyCode != 123 && event.keyCode != 85)">
+
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="logo-box">PRC</div>
+            <h2 style="margin-bottom: 5px; color: var(--prc);">Persona Research & Consulting</h2>
+            <p style="color: #64748b; margin-bottom: 30px;">Digital Assessment - Kecerdasan 1</p>
+            <input type="text" id="inName" placeholder="Nama Lengkap" autocomplete="off">
+            <button class="btn-start" onclick="startTest()">Mulai Ujian Sekarang</button>
+        </div>
+    </div>
+
+    <div id="test-screen" style="display:none;">
+        <header>
+            <div style="font-weight:bold; letter-spacing:1px;">Persona Research & Consulting</div>
+            <div id="timer" style="background:rgba(255,255,255,0.2); padding:6px 18px; border-radius:12px; font-family:monospace; font-size:22px;">60:00</div>
+        </header>
+
+        <div class="container">
+            <div style="margin-bottom:15px; display:flex; justify-content:space-between; color:#64748b; font-size:14px;">
+                <span>PROGRES: <b id="q-num">1</b> / <b id="q-total">100</b></span>
+                <span>TERJAWAB: <b id="count-ans" style="color:var(--prc)">0</b></span>
+            </div>
+            
+            <div class="q-card">
+                <div id="q-text" class="q-text">Loading question...</div>
+                <div id="options"></div>
+            </div>
+
+            <div class="nav-btns">
+                <button class="btn-nav btn-prev" onclick="nav(-1)">Sebelumnya</button>
+                <button id="btn-next-nav" class="btn-nav btn-next" onclick="nav(1)">Selanjutnya</button>
+            </div>
+
+            <div class="nav-grid" id="nav-grid"></div>
+        </div>
+    </div>
+
+    <div id="result-screen" style="display:none;" class="container">
+        <div class="q-card" style="text-align:center; border-top: 8px solid var(--gold); padding: 30px;">
+            <h2 style="color:var(--prc); margin:0;">Hasil Evaluasi</h2>
+            <div style="font-size:72px; font-weight:800; margin:15px 0; color:var(--dark);" id="final-score">0</div>
+            <div id="res-info" style="line-height:1.6; color:#475569; font-size:15px; margin-bottom: 20px;"></div>
+            <div style="padding:12px; background:#f1f5f9; border-radius:10px; font-size:12px; color:#64748b;">
+                Data telah tersimpan di database Persona Research & Consulting.
+            </div>
+        </div>
+
+        <h3 style="margin:35px 0 15px; display:flex; align-items:center; gap:10px; font-size: 18px;">
+            <span style="width:8px; height:22px; background:var(--gold); display:inline-block; border-radius:2px;"></span>
+            Ringkasan Pembahasan
+        </h3>
+        
+        <div class="q-card" style="padding: 0; overflow: hidden; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 50px; text-align: center;">No</th>
+                            <th>Soal & Analisis</th>
+                            <th style="width: 80px; text-align: center;">Kunci</th>
+                            <th style="width: 100px; text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-bahas"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxp_LboBzFPWAwYnpIYbzcvXbafmrDSekTmk7PkaRt871LTHPEAt375cGR65pCsT4vw/exec";
+        const EXPIRED_DATE = new Date("2026-07-01");
+
+        let database = [
+             {q: "MILITAN =", o: ["Anti penindasan", "Ideologi", "Agresif", "Brutal", "Penggolongan"], a: 2, h: "Militan dalam KBBI berarti bersemangat tinggi, penuh gairah, dan cenderung agresif atau keras dalam memperjuangkan sesuatu."},
+            {q: "EKSKAVASI =", o: ["Penggalian", "Pertolongan", "Pengangkutan", "Pelaku", "Pelaksana"], a: 0, h: "Ekskavasi adalah proses penggalian yang dilakukan di tempat yang mengandung benda purbakala atau untuk keperluan arkeologi."},
+            {q: "PARADOKSAL =", o: ["Sejalan", "Seiring", "Ideal", "Kontras", "Konsisten"], a: 3, h: "Paradoksal bersifat paradoks, yaitu pernyataan yang seolah-olah berlawanan atau kontras dengan pendapat umum tetapi kenyataannya mengandung kebenaran."},
+            {q: "RESTRIKSI =", o: ["Pembatasan", "Halus", "Alim", "Peraturan", "Larangan"], a: 0, h: "Restriksi secara teknis berarti pembatasan atau pengekangan terhadap suatu peredaran, tindakan, atau penggunaan."},
+            {q: "MAL =", o: ["Harta benda", "Bencana", "Zakat", "Warisan", "Sedekah"], a: 0, h: "Dalam konteks hukum islam atau istilah umum, Mal berarti harta benda atau kekayaan."},
+            {q: "PROMOTOR =", o: ["Penggerak", "Penghambat", "Pendamping", "Pelihat", "Pembantu"], a: 0, h: "Promotor adalah orang yang menjadi pendorong, penggerak, atau penganjur suatu usaha atau kegiatan."},
+            {q: "ELABORASI =", o: ["Penjelasan terperinci", "Kontraksi", "Penyusupan", "Pendadaran", "Peradaban"], a: 0, h: "Elaborasi berarti penggarapan sesuatu secara tekun, cermat, dan disertai dengan penjelasan yang sangat terperinci."},
+            {q: "KONVENSI =", o: ["Kesepakatan", "Kebijakan", "Kesamaan", "Perpindahan", "Pembagian"], a: 0, h: "Konvensi adalah permufakatan atau kesepakatan umum (terutama mengenai adat, tradisi, dan sebagainya)."},
+            {q: "APORISMA =", o: ["Maksimal", "Bentuk", "Sifat", "Kualitas", "Peribahasa"], a: 4, h: "Aporisma (Aforisme) adalah pernyataan yang singkat dan padat yang mengandung kebenaran umum atau peribahasa."},
+            {q: "DIKOTOMI =", o: ["Dua kekuatan", "Dua kepala", "Dua pilihan", "Dibagi dua", "Dua cabang"], a: 3, h: "Dikotomi adalah pembagian atas dua kelompok yang saling bertentangan atau berbeda secara signifikan."},
+            {q: "ITERASI =", o: ["Perulangan", "Hubungan", "Interaksi", "Jalur", "Tingkatan"], a: 0, h: "Dalam berbagai bidang, iterasi merujuk pada proses perulangan langkah-langkah untuk mencapai tujuan tertentu."},
+            {q: "GENS =", o: ["Keturunan", "Kehormatan", "Gaya", "Anggota", "Kelompok"], a: 0, h: "Gens merupakan istilah yang merujuk pada kelompok kekerabatan atau keturunan dari nenek moyang yang sama."},
+            {q: "VIRTUAL =", o: ["Nyata", "Impian", "Maya", "Bayangan", "Rahasia"], a: 2, h: "Virtual berarti tampak nyata tetapi sebenarnya hanya ada dalam gambaran atau secara maya (melalui perantara teknologi)."},
+            {q: "FRIKSI =", o: ["Perpecahan", "Gesekan", "Tekanan", "Tabrakan", "Keraguan"], a: 1, h: "Friksi secara fisik berarti gesekan, namun dalam konteks sosial sering diartikan sebagai pergeseran atau perselisihan."},
+            {q: "HAYATI =", o: ["Menjiwai", "Hidup", "Meresapi", "Tumbuhan", "Biologi"], a: 1, h: "Hayati berasal dari kata hayat yang berarti hidup; segala sesuatu yang berhubungan dengan kehidupan."},
+            {q: "PROGRESIF =", o: ["Mundur", "Berhenti", "Bertahap", "Maju", "Cepat"], a: 3, h: "Progresif artinya cenderung ke arah kemajuan atau bergerak maju secara berkelanjutan."},
+            {q: "STAGNAN =", o: ["Macet", "Lancar", "Luas", "Sempit", "Berubah"], a: 0, h: "Stagnan artinya dalam keadaan terhenti, tidak bergerak, atau macet."},
+            {q: "OTODIDAK =", o: ["Belajar sendiri", "Cara mengajar", "Ahli mesin", "Guru", "Pelajaran"], a: 0, h: "Otodidak adalah orang yang belajar suatu ilmu atau keterampilan tanpa bantuan guru atau sekolah formal."},
+            {q: "KUNYAH =", o: ["Telan", "Makan", "Mamah", "Gigit", "Hisap"], a: 2, h: "Mengunyah memiliki arti yang sama dengan memamah, yaitu menghancurkan makanan di mulut dengan gigi."},
+            {q: "EVOKASI =", o: ["Pengungsian", "Penilaian", "Penggugah rasa", "Perubahan", "Pengurangan"], a: 2, h: "Evokasi adalah (daya) penggugah rasa atau pengalihan perhatian yang memicu imajinasi/perasaan tertentu."},
+            {q: "PROMINEN ><", o: ["Terkemuka", "Biasa", "Mewah", "Rendah", "Setuju"], a: 1, h: "Prominen berarti terkemuka atau menonjol. Lawan kata yang paling tepat adalah biasa atau tidak menonjol."},
+            {q: "EPILOG ><", o: ["Dialog", "Monolog", "Prolog", "Katalog", "Analog"], a: 2, h: "Epilog adalah bagian penutup karya sastra. Lawan katanya adalah Prolog (bagian pengantar/pembukaan)."},
+            {q: "NOMADIK ><", o: ["Menetap", "Berpindah", "Mapan", "Sesuai", "Teratur"], a: 0, h: "Nomadik artinya berpindah-pindah. Lawan katanya adalah menetap atau berdiam di satu tempat."},
+            {q: "KONVEKS ><", o: ["Cekung", "Cembung", "Bundar", "Datar", "Lonjong"], a: 0, h: "Konveks berarti cembung. Lawan kata dari cembung adalah cekung (Konkaf)."},
+            {q: "TENTATIF ><", o: ["Pasti", "Ragu", "Sementara", "Teratur", "Cepat"], a: 0, h: "Tentatif artinya belum pasti atau masih dapat berubah. Lawan katanya adalah pasti atau tetap."},
+            {q: "PROGRESIF ><", o: ["Regresif", "Aktif", "Positif", "Agresif", "Statis"], a: 0, h: "Progresif berarti bergerak maju. Lawan katanya adalah regresif yang berarti bergerak mundur."},
+            {q: "OTORITER ><", o: ["Demokrasi", "Diktator", "Mandiri", "Bebas", "Adil"], a: 0, h: "Otoriter artinya berkuasa sendiri atau sewenang-wenang. Lawan katanya adalah demokrasi (kedaulatan rakyat)."},
+            {q: "AMATIR ><", o: ["Ahli", "Pemula", "Canggih", "Baru", "Profesional"], a: 4, h: "Amatir adalah orang yang melakukan kegiatan atas dasar kesenangan, bukan profesi. Lawan katanya adalah Profesional."},
+            {q: "ABSURD ><", o: ["Masuk akal", "Mustahil", "Lucu", "Aneh", "Nyata"], a: 0, h: "Absurd berarti tidak masuk akal atau mustahil. Lawan katanya adalah sesuatu yang logis atau masuk akal."},
+            {q: "KHAS ><", o: ["Khusus", "Istimewa", "Umum", "Tetap", "Berbeda"], a: 2, h: "Khas berarti khusus atau teristimewa. Lawan katanya adalah umum atau universal."},
+            {q: "OPRESI ><", o: ["Penindasan", "Kebebasan", "Tekanan", "Dukungan", "Bantuan"], a: 1, h: "Opresi adalah penindasan atau tekanan. Lawan katanya adalah kebebasan atau kemerdekaan."},
+            {q: "ASLI ><", o: ["Orisinal", "Murni", "Duplikat", "Baru", "Kuno"], a: 2, h: "Asli berarti orisinal atau murni. Lawan katanya adalah duplikat atau tiruan."},
+            {q: "VOKAL ><", o: ["Huruf", "Suara", "Pendiam", "Berisik", "Konsonan"], a: 4, h: "Vokal dalam bahasa berarti huruf hidup. Lawan katanya adalah konsonan atau huruf mati."},
+            {q: "STABIL ><", o: ["Tetap", "Goyah", "Kuat", "Permanen", "Aman"], a: 1, h: "Stabil artinya mantap atau tidak berubah-ubah. Lawan katanya adalah goyah atau labil."},
+            {q: "OPTIMIS ><", o: ["Yakin", "Pesimis", "Berani", "Takut", "Sedih"], a: 1, h: "Optimis adalah berpengharapan baik. Lawan katanya adalah pesimis (berpandangan buruk)."},
+            {q: "EKSTRINSIK ><", o: ["Luar", "Dalam", "Intrinsik", "Eksklusif", "Inklusif"], a: 2, h: "Ekstrinsik berarti berasal dari luar. Lawan katanya adalah intrinsik (berasal dari dalam)."},
+            {q: "DINAMIS ><", o: ["Statis", "Bergerak", "Cepat", "Berubah", "Aktif"], a: 0, h: "Dinamis artinya penuh gerak atau semangat. Lawan katanya adalah statis (diam/tidak bergerak)."},
+            {q: "LONGGAR ><", o: ["Sempit", "Luas", "Pas", "Ketat", "Rapat"], a: 3, h: "Longgar artinya tidak rapat atau tidak sesak. Lawan kata yang tepat untuk pakaian/ukuran adalah ketat."},
+            {q: "RECHTSORDER ><", o: ["Tertib hukum", "Kacau", "Hukum", "Anarki", "Aturan"], a: 3, h: "Rechtsorder berarti tata hukum atau tertib hukum. Lawan katanya adalah Anarki (ketiadaan aturan/kekacauan)."},
+            {q: "KOHESI ><", o: ["Melekat", "Adhesi", "Tarik-menarik", "Campuran", "Satuan"], a: 1, h: "Kohesi adalah gaya tarik-menarik antar molekul sejenis. Lawan katanya adalah Adhesi (antar molekul berbeda)."},
+            {q: "MOBIL : BENSIN =", o: ["Pesawat", "Motor", "Sapi", "Manusia : Makanan", "Lampu"], a: 3, h: "Mobil membutuhkan bensin sebagai sumber energi/bahan bakar agar bisa bergerak, seperti Manusia yang membutuhkan Makanan."},
+            {q: "KUMAN : PENYAKIT =", o: ["Api : Kebakaran", "Dokter", "Pasien", "Kapas", "Guru"], a: 0, h: "Kuman adalah penyebab terjadinya penyakit, sebagaimana Api adalah penyebab terjadinya Kebakaran."},
+            {q: "GURU : SEKOLAH =", o: ["Penebang : Hutan", "Dokter", "Pengacara", "Masinis", "Tukang"], a: 0, h: "Guru bekerja di Sekolah, sebagaimana Penebang bekerja di Hutan (Profesi : Tempat Kerja)."},
+            {q: "KULIT : SISIK =", o: ["Atap : Genteng", "Dinding", "Rumah", "Ban", "Mata"], a: 0, h: "Kulit berfungsi sebagai pelapis luar tubuh, sisik pelapis pada ikan. Analoginya seperti Atap yang dilapisi oleh Genteng."},
+            {q: "KEPALA : TOPI =", o: ["Tangan", "Kaki : Sepatu", "Jari", "Leher", "Tubuh"], a: 1, h: "Kepala menggunakan topi sebagai penutup/pelindung, sebagaimana Kaki menggunakan Sepatu."},
+            {q: "MATAHARI : TERIK =", o: ["Es", "Air", "Api : Panas", "Angin", "Lampu"], a: 2, h: "Sifat dari Matahari adalah terik, sebagaimana sifat dari Api adalah panas (Benda : Sifat)."},
+            {q: "KEPAK : SAYAP =", o: ["Hentak : Kaki", "Tarik", "Hirup", "Kunyah", "Kedip"], a: 0, h: "Kepak adalah gerakan khas yang dilakukan oleh Sayap, sebagaimana Hentak adalah gerakan khas Kaki."},
+            {q: "HIDUNG : MENCIUM =", o: ["Mata", "Telinga", "Lidah", "Kulit", "Semua Benar"], a: 4, h: "Semua pilihan tersebut benar karena menghubungkan antara alat indra dengan fungsi utamanya masing-masing."},
+            {q: "KAYU : MEBEL =", o: ["Benang", "Gandum : Roti", "Besi", "Pasir", "Kertas"], a: 1, h: "Kayu adalah bahan mentah untuk membuat Mebel, sebagaimana Gandum adalah bahan mentah untuk membuat Roti."},
+            {q: "PENULIS : BUKU =", o: ["Sutradara", "Komposer", "Pelukis", "Koki", "Semua Benar"], a: 4, h: "Semua pilihan merupakan hubungan antara pencipta (profesi) dengan karya yang dihasilkannya."},
+            {q: "LAPAR : MAKAN = HAUS :", o: ["Lelah", "Air", "Minum", "Teguk", "Kenyang"], a: 2, h: "Lapar dihilangkan dengan tindakan Makan, Haus dihilangkan dengan tindakan Minum (Kebutuhan : Solusi)."},
+            {q: "SARUNG TANGAN : TANGAN =", o: ["Kaos Kaki : Kaki", "Sepatu", "Jari", "Lari", "Kulit"], a: 0, h: "Sarung tangan dipakai untuk menutupi tangan, sebagaimana Kaos Kaki dipakai untuk menutupi kaki."},
+            {q: "HUJAN : BASAH = PANAS :", o: ["Keringat", "Kering", "Matahari", "Haus", "Api"], a: 1, h: "Dampak dari Hujan adalah menjadi Basah, dampak dari Panas adalah menjadi Kering (Sebab : Akibat)."},
+            {q: "BAIT : PUISI = KALIMAT :", o: ["Prosa", "Nada", "Paragraf", "Kata", "Buku"], a: 2, h: "Beberapa bait membentuk satu Puisi, beberapa kalimat membentuk satu Paragraf (Bagian : Keseluruhan)."},
+            {q: "KONTRAKTOR : BETON = PENJAHIT :", o: ["Benang", "Kain", "Jarum", "Baju", "Mesin"], a: 1, h: "Kontraktor bekerja mengolah beton, penjahit bekerja mengolah kain sebagai bahan utama kerjanya."},
+            {q: "MELATI : BUNGA = COKLAT :", o: ["Manis", "Makanan", "Warna", "Pohon", "Rasa"], a: 2, h: "Melati adalah salah satu jenis bunga, Coklat adalah salah satu jenis warna (Jenis : Klasifikasi)."},
+            {q: "TELESKOP : BINTANG = MIKROSKOP :", o: ["Bakteri", "Mata", "Kecil", "Lensa", "Lab"], a: 0, h: "Teleskop digunakan untuk melihat bintang, Mikroskop digunakan untuk melihat bakteri (Alat : Objek)."},
+            {q: "GIGI : KUNYAH = JARI :", o: ["Pegang", "Kuku", "Tangan", "Ketik", "Lentur"], a: 0, h: "Gigi berfungsi untuk mengunyah, Jari berfungsi untuk memegang sesuatu (Anggota tubuh : Fungsi)."},
+            {q: "DRAMA : BABAK = PERTANDINGAN :", o: ["Wasit", "Bola", "Ronde", "Juara", "Lapangan"], a: 2, h: "Drama dibagi ke dalam beberapa babak, sedangkan pertandingan dibagi ke dalam beberapa ronde/babak."},
+            {q: "KAKAK : ADIK = SENIOR :", o: ["Guru", "Murid", "Junior", "Alumni", "Atasan"], a: 2, h: "Kakak adalah tingkatan yang lebih tua dari Adik, Senior adalah tingkatan yang lebih tinggi dari Junior."},
+            {q: "25% dari 200 adalah...", o: ["40", "50", "60", "70", "80"], a: 1, h: "Cara hitung: 25/100 x 200 = 0,25 x 200 = 50."},
+            {q: "Jika x=5, y=3, maka (x+y)^2 =", o: ["16", "25", "34", "64", "81"], a: 3, h: "Substitusi nilai: (5+3)^2 = 8^2 = 8 x 8 = 64."},
+            {q: "Beli barang 100rb, untung 20%. Harga Jual?", o: ["110rb", "120rb", "130rb", "140rb", "150rb"], a: 1, h: "Untung = 20% x 100rb = 20rb. Harga Jual = 100rb + 20rb = 120rb."},
+            {q: "Akar 144 + Akar 169 =", o: ["23", "25", "27", "29", "31"], a: 1, h: "Akar 144 = 12. Akar 169 = 13. Maka 12 + 13 = 25."},
+            {q: "3x + 5 = 20. Berapakah nilai x?", o: ["3", "4", "5", "6", "7"], a: 2, h: "3x = 20 - 5 -> 3x = 15 -> x = 15/3 = 5."},
+            {q: "2/3 dari 90 adalah...", o: ["30", "45", "60", "75", "80"], a: 2, h: "(90 / 3) * 2 = 30 * 2 = 60."},
+            {q: "15 x 4 : 2 =", o: ["20", "25", "30", "35", "40"], a: 2, h: "15 x 4 = 60. Kemudian 60 / 2 = 30."},
+            {q: "Persegi dengan sisi 8cm. Berapa Luasnya?", o: ["16", "32", "48", "64", "80"], a: 3, h: "Luas = Sisi x Sisi = 8 x 8 = 64 cm2."},
+            {q: "Rata-rata dari 10, 20, dan 30 adalah...", o: ["15", "20", "25", "30", "35"], a: 1, h: "Jumlah = 60. Rata-rata = 60 / 3 = 20."},
+            {q: "4x + 10 = 30. Berapa nilai x?", o: ["4", "5", "6", "7", "8"], a: 1, h: "4x = 20 -> x = 5."},
+            {q: "Bentuk desimal 0,75 jika jadi pecahan =", o: ["1/2", "2/3", "3/4", "4/5", "5/6"], a: 2, h: "0,75 = 75/100 = 3/4."},
+            {q: "2^3 x 2^2 =", o: ["16", "32", "64", "12", "10"], a: 1, h: "8 x 4 = 32."},
+            {q: "5 buku seharga 15rb, berapa harga 8 buku?", o: ["20rb", "24rb", "25rb", "30rb", "32rb"], a: 1, h: "1 buku = 3rb. 8 buku = 24rb."},
+            {q: "1/2 + 1/4 =", o: ["2/6", "1/6", "3/4", "2/4", "1/8"], a: 2, h: "0,5 + 0,25 = 0,75 = 3/4."},
+            {q: "Segitiga alas 10cm, tinggi 5cm. Luas?", o: ["25", "50", "75", "100", "15"], a: 0, h: "1/2 x 10 x 5 = 25 cm2."},
+            {q: "x^2 - 4 = 0. Maka x adalah...", o: ["2", "-2", "2 dan -2", "4", "0"], a: 2, h: "x^2 = 4. Maka x bisa 2 atau -2."},
+            {q: "1,5 jam sama dengan berapa detik?", o: ["3600", "4500", "5400", "6000", "7200"], a: 2, h: "1,5 x 3600 = 5400 detik."},
+            {q: "Faktor prima dari angka 12?", o: ["2x2x3", "2x3x3", "3x4", "2x6", "1x12"], a: 0, h: "12 = 2 x 2 x 3."},
+            {q: "Pekerjaan oleh 10 org (4 hari). Jika 5 org?", o: ["2", "4", "6", "8", "10"], a: 3, h: "(10 x 4) / 5 = 8 hari."},
+            {q: "5 + 3 x 2 =", o: ["16", "11", "13", "10", "15"], a: 1, h: "5 + 6 = 11."},
+            {q: "2, 4, 6, 8, ...", o: ["9", "10", "11", "12", "13"], a: 1, h: "Pola +2."},
+            {q: "1, 3, 9, 27, ...", o: ["30", "45", "64", "81", "90"], a: 3, h: "Pola x3."},
+            {q: "100, 90, 80, 70, ...", o: ["65", "60", "55", "50", "45"], a: 1, h: "Pola -10."},
+            {q: "1, 2, 4, 7, 11, ...", o: ["14", "15", "16", "17", "18"], a: 2, h: "+1, +2, +3, +4, maka +5 (16)."},
+            {q: "2, 3, 5, 8, 12, ...", o: ["15", "16", "17", "18", "19"], a: 2, h: "+1, +2, +3, +4, maka +5 (17)."},
+            {q: "5, 10, 15, 20, ...", o: ["25", "30", "35", "40", "45"], a: 0, h: "Pola +5."},
+            {q: "1, 4, 9, 16, ...", o: ["20", "25", "30", "36", "49"], a: 1, h: "Pola kuadrat: 5^2 = 25."},
+            {q: "1, 1, 2, 3, 5, 8, ...", o: ["10", "11", "12", "13", "15"], a: 3, h: "Fibonacci: 5+8=13."},
+            {q: "80, 40, 20, 10, ...", o: ["8", "6", "5", "4", "2"], a: 2, h: "Pola :2."},
+            {q: "3, 6, 12, 24, ...", o: ["30", "36", "42", "48", "60"], a: 3, h: "Pola x2."},
+            {q: "2, 5, 10, 17, ...", o: ["24", "25", "26", "27", "28"], a: 2, h: "+3, +5, +7, maka +9 (26)."},
+            {q: "A, C, E, G, ...", o: ["H", "I", "J", "K", "L"], a: 1, h: "Lompat satu huruf."},
+            {q: "Z, Y, X, W, ...", o: ["U", "V", "T", "S", "R"], a: 1, h: "Alfabet terbalik."},
+            {q: "2, 4, 8, 14, 22, ...", o: ["30", "32", "34", "36", "38"], a: 1, h: "+2, +4, +6, +8, maka +10 (32)."},
+            {q: "10, 12, 16, 22, ...", o: ["28", "30", "32", "34", "36"], a: 1, h: "+2, +4, +6, maka +8 (30)."},
+            {q: "1, 3, 6, 10, 15, ...", o: ["20", "21", "22", "23", "25"], a: 1, h: "+2, +3, +4, +5, maka +6 (21)."},
+            {q: "50, 48, 44, 38, ...", o: ["34", "32", "30", "28", "26"], a: 2, h: "-2, -4, -6, maka -8 (30)."},
+            {q: "3, 9, 27, 81, ...", o: ["124", "243", "162", "250", "240"], a: 1, h: "3^5 = 243."},
+            {q: "100, 50, 25, ...", o: ["12.5", "10", "5", "15", "20"], a: 0, h: "Pola :2."},
+            {q: "7, 10, 13, 16, ...", o: ["18", "19", "20", "21", "22"], a: 1, h: "Pola +3."}
+
+        ];
+
+        let currentIdx = 0;
+        let userAnswers = {};
+        let namaPeserta = "";
+        let timeLeft = 3600; 
+        let timerInterval;
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function startTest() {
+            if(new Date() > EXPIRED_DATE) return alert("Akses soal ini telah berakhir.");
+            namaPeserta = document.getElementById('inName').value.trim();
+            if(namaPeserta.length < 3) return alert("Masukkan Nama Lengkap!");
+
+            shuffle(database); // AKTIFKAN AUTO-SHUFFLE
+
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('test-screen').style.display = 'block';
+            document.getElementById('q-total').innerText = database.length;
+            
+            generateNavGrid();
+            showSoal();
+            startTimer();
+        }
+
+        function generateNavGrid() {
+            const grid = document.getElementById('nav-grid');
+            grid.innerHTML = "";
+            database.forEach((_, i) => {
+                const item = document.createElement('div');
+                item.className = 'nav-item';
+                item.id = `nav-${i}`;
+                item.innerText = i + 1;
+                item.onclick = () => jumpTo(i);
+                grid.appendChild(item);
+            });
+        }
+
+        function jumpTo(idx) {
+            currentIdx = idx;
+            showSoal();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                let m = Math.floor(timeLeft/60);
+                let s = timeLeft % 60;
+                document.getElementById('timer').innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+                if(timeLeft <= 0) finish(true);
+            }, 1000);
+        }
+
+        function showSoal() {
+            const s = database[currentIdx];
+            document.getElementById('q-num').innerText = currentIdx + 1;
+            document.getElementById('q-text').innerText = s.q;
+            
+            let html = "";
+            s.o.forEach((opt, i) => {
+                const sel = userAnswers[currentIdx] === i ? 'selected' : '';
+                html += `<div class="opt ${sel}" onclick="select(${i})">
+                            <span style="margin-right:15px; opacity:0.5; font-weight:bold;">${String.fromCharCode(65+i)}</span> 
+                            ${opt}
+                         </div>`;
+            });
+            document.getElementById('options').innerHTML = html;
+
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`nav-${currentIdx}`).classList.add('active');
+
+            const nextBtn = document.getElementById('btn-next-nav');
+            if(currentIdx === database.length - 1) {
+                nextBtn.innerText = "Selesai & Kirim";
+                nextBtn.className = "btn-nav btn-finish";
+            } else {
+                nextBtn.innerText = "Selanjutnya";
+                nextBtn.className = "btn-nav btn-next";
+            }
+        }
+
+        function select(idx) {
+            userAnswers[currentIdx] = idx;
+            document.getElementById(`nav-${currentIdx}`).classList.add('filled');
+            showSoal();
+            document.getElementById('count-ans').innerText = Object.keys(userAnswers).length;
+
+            if (currentIdx < database.length - 1) {
+                setTimeout(() => { nav(1); }, 300); // AUTO-NEXT
+            }
+        }
+
+        function nav(dir) {
+            if(dir === 1 && currentIdx === database.length - 1) {
+                finish();
+            } else {
+                currentIdx += dir;
+                if(currentIdx < 0) currentIdx = 0;
+                if(currentIdx >= database.length) currentIdx = database.length - 1;
+                showSoal();
+            }
+        }
+
+        function finish(isAuto = false) {
+            if(isAuto || confirm("Akhiri tes dan kirim nilai?")) {
+                clearInterval(timerInterval);
+                let benar = 0;
+                let tableRows = "";
+                
+                database.forEach((s, i) => {
+                    const isBenar = userAnswers[i] === s.a;
+                    if(isBenar) benar++;
+                    
+                    tableRows += `
+                        <tr>
+                            <td style="text-align: center; font-weight: bold; color: #64748b;">${i+1}</td>
+                            <td>
+                                <div style="font-weight: 600; color: var(--dark); margin-bottom: 4px;">${s.q}</div>
+                                <div style="font-size: 12px; color: #64748b; line-height: 1.4;"><b>Analisis:</b> ${s.h}</div>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="badge-kunci">${String.fromCharCode(65+s.a)}</span>
+                            </td>
+                            <td style="text-align: center; font-weight: bold; font-size: 12px; color: ${isBenar ? '#22c55e' : '#ef4444'};">
+                                ${isBenar ? 'BENAR' : (userAnswers[i] !== undefined ? 'SALAH' : 'KOSONG')}
+                            </td>
+                        </tr>`;
+                });
+
+                const skor = Math.round((benar / database.length) * 100);
+                document.getElementById('final-score').innerText = skor;
+                document.getElementById('res-info').innerHTML = `<b>Peserta:</b> ${namaPeserta} <br> <b>Akurasi:</b> ${benar} Benar dari ${database.length} Soal`;
+                document.getElementById('table-body-bahas').innerHTML = tableRows;
+
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        nama: namaPeserta, skor: skor, benar: benar, total: database.length,
+                        kategori: "Kecerdasan 1", timestamp: new Date().toLocaleString('id-ID')
+                    })
+                });
+
+                document.getElementById('test-screen').style.display = 'none';
+                document.getElementById('result-screen').style.display = 'block';
+                window.scrollTo(0,0);
+            }
+        }
+    </script>
+</body>
+</html>
